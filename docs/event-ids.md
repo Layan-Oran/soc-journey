@@ -1,10 +1,30 @@
 # Windows Security Event IDs
 
-| Event ID | شو معناه بكلماتي | ليش مهم للـ SOC |
-|4740|---|Account lockout when  the user fails to log in  multiple times ,or it's an evidence for a Brute-Force Attack ,or Stale Cached Credentials when the browser saves the past password  |
-| 4625 | ... | An account failed to log on. When this event occurs multiple times sometimes it  indicates a Brute-Force Attacke |
-| 4624 | ... | An account was successfully logged on|
-| 4720 | ... |(New Account added succssesfully) local account or active directory account ,sometimes attacker uses this for (Persistence)|
-| 4688 | ... |A new process has been created|
-| 4672 | ... |Administrator equivalent privileges|
-| 4634 | ... | An account was logged off
+الرقم     |     شو الي صار                                                                                    |  ليش بهمني كمحلل
+
+ 4625   |   حدا حاول الدخول على الجهاز لكن اما كلمة السر او اسم المستخدم خاطئ                                              |
+
+ 4624   |  حدا دخل على الجهاز بنجاح                                                                             | وجوده طبيعي لكن اذا جاء بعد سلسلة طويلة من محاولات الدخول الفاشلة قد يكون هجوم  Brute-Force 
+
+4634    | تسجيل الخروج من الحساب                                                                               | يمكن الاستفادة منه معرفة وقت الجلسة من خلال ربطه مع الحدث 4625 
+
+4672    | تم إعطاء صلاحيات خاصة لهذا المستحدم                                                     | اذا أعطيت هذه  الصلاحيات لحساب admin او عمليات النظام فهو طبيعي اما اذا كانت لحساب جديد او غير مخول لهذه الصلاحيات فهو غير طبيعي (يجب التفريق بين الطبيعي منها وغير الطبيعي من خلال عمل baseline ) والتركيز على الحسابات غير المتوقعة 
+
+ 4688   | تم انشاء عملية جديدة (برنامج يعمل )                                                                      | يجب التركيز على العلاقة بين العملية والعملية التي انشأتها (العملية الاب)
+
+ 4720   | تم انشاء مستخدم جديد واضافته بنجاح                                                       | اذا ما كان من خلال عمليات النظام  فهذا احتمال انه حساب تم انشائه من قبل المهاجم   (Persistence) ليثبت وجوده في النظام ثم محاولة إضافة هذا الحساب الى حسابات الادمنز
+
+
+ 4740  |  تم اغلاق الحساب من قبل النظام                                                              |  محاولات دخول فاشلة اكثر من مرة أو وجود خدمة تعمل بكلمة سر قديمة   Caller) Computer Name   ) هذا الحقل يخبرنا من الذ قام باغلاق الحساب ويمكن استخدامه للتفريق بين أسباب الاغلاق 
+
+
+(Baseline) كيف نحدد اذا كان الحساب الذي اعطي الصلاحيات مشبوه (Event id 4672)
+
+*غالبا عمليات النظام (system , LOCAL SERVICE,Network service) او الحسابات المنتهية ب ($) وحسابات الادمنز المعروفة عندي يتم التغاضي عنها 
+
+sub statuse 4625 :
+0xC0000064	اسم المستخدم مش موجود
+0xC000006A	الاسم صح بس كلمة السر غلط
+0xC0000234	الحساب مقفول (بيرتبط بـ 4740)
+
+
